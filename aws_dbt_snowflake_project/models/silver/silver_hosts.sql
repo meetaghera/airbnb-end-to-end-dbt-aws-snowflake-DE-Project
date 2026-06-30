@@ -1,0 +1,16 @@
+{{ config(
+    materialized='incremental',
+    unique_key='host_id'
+) }}
+
+SELECT
+    HOST_ID,
+    TRIM(HOST_NAME) AS HOST_NAME,
+    HOST_SINCE,
+    TRY_CAST(IS_SUPERHOST AS BOOLEAN) AS IS_SUPERHOST,
+    CASE 
+    WHEN RESPONSE_RATE >= 95 THEN 'VERY GOOD' 
+    WHEN RESPONSE_RATE BETWEEN 80 AND 94 THEN 'GOOD' 
+    WHEN RESPONSE_RATE BETWEEN 60 AND 80 THEN 'FAIR' ELSE 'unknown' END AS RESPONSE_RATE_BUCKET,
+    CREATED_AT
+FROM {{ ref('bronze_hosts') }}
